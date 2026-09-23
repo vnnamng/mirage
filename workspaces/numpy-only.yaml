@@ -1,0 +1,26 @@
+# A leaner python: only numpy is preloaded, pandas is denied outright, and
+# nothing else is fetched lazily. Boots faster and uses less memory than the
+# default; `import pandas` fails inside the guest.
+name: numpy-only
+mode: exec
+
+mounts:
+  /data:
+    type: ram
+    description: Inputs, in memory only.
+  /out:
+    type: disk
+    root: ../vfs/numpy-only
+    wipe: true
+    description: Outputs on disk.
+
+runtimes:
+  - type: pyodide
+    config:
+      packages: [numpy]
+      denyPackages: [pandas]
+      autoLoadFromImports: false
+      bootstrapCode: |
+        import warnings
+        warnings.filterwarnings("ignore")
+  - vfs

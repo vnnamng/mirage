@@ -1,0 +1,42 @@
+# One tenant's workspace. TENANT_ID comes from the caller's vars (or the
+# environment). Same virtual paths for every tenant; isolation comes from the
+# per-tenant disk root and the fresh RAM mount and Pyodide instance.
+name: tenant-${TENANT_ID}
+mode: exec
+
+mounts:
+  /data:
+    type: ram
+    description: This user's inputs, in memory only.
+    seed:
+      secret.txt: ${TENANT_SECRET:-no-secret}
+      hello.txt: { file: ./fixtures/hello.txt }
+      sub/nested.txt: nested seed
+  /vendor:
+    type: ram
+    seedDir: ./fixtures
+    mode: read
+    description: A whole host directory loaded into RAM, read-only.
+  /ref:
+    type: ram
+    mode: read
+    description: Read-only reference data shared with the agent.
+    seed:
+      constants.csv: |
+        name,value
+        pi,3.14159
+        e,2.71828
+  /out:
+    type: disk
+    root: ../vfs/tenants/${TENANT_ID}
+    wipe: true
+    description: This user's outputs, persisted to disk.
+
+runtimes:
+  - type: pyodide
+    config:
+      packages: [numpy, pandas]
+  - vfs
+
+options:
+  agentId: agent-${TENANT_ID}

@@ -1,0 +1,9 @@
+node_modules/
+.env
+logs/
+vfs/
+workspaces/wheels/
+.env.*
+!.env.example
+dist/
+*.tsbuildinfo

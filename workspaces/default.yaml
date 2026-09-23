@@ -1,0 +1,20 @@
+# The workspace the tests and the chat CLI have used so far, as a file.
+# RAM inputs at /data, disk outputs at /out (the project's vfs/ folder),
+# python3 answered by Pyodide with numpy and pandas preloaded.
+name: default
+mode: exec
+
+mounts:
+  /data:
+    type: ram
+    description: In-memory filesystem holding input files (read/write).
+  /out:
+    type: disk
+    root: ../vfs
+    description: Disk-backed filesystem for output files (read/write).
+
+runtimes:
+  - type: pyodide
+    config:
+      packages: [numpy, pandas]
+  - vfs

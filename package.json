@@ -1,0 +1,43 @@
+{
+  "name": "mirage-pyodide-deepagents-test",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Tests for the mirage RAM VFS + Pyodide runtime (numpy, pandas) driven directly and through a deepagents agent on the Anthropic API.",
+  "scripts": {
+    "test": "vitest run",
+    "test:direct": "vitest run tests/pyodide-direct.test.ts",
+    "test:agent": "vitest run tests/deepagents-pyodide.test.ts",
+    "test:tenant": "vitest run tests/multi-tenant.test.ts",
+    "test:yaml": "vitest run tests/yaml-config.test.ts",
+    "test:sci": "vitest run tests/scientific.test.ts",
+    "replay": "node cli/replay.ts",
+    "fetch:wheels": "node cli/fetch-wheels.ts",
+    "bench:tenants": "node --expose-gc cli/bench-tenants.ts",
+    "bench:warm": "node --expose-gc cli/bench-warm.ts",
+    "chat": "node cli/chat.ts"
+  },
+  "engines": {
+    "node": ">=20.10.0"
+  },
+  "dependencies": {
+    "@langchain/anthropic": "^1.5.10",
+    "@langchain/core": "^1.2.11",
+    "@langchain/langgraph": "^1.4.15",
+    "@struktoai/mirage-agents": "^0.0.6",
+    "@struktoai/mirage-core": "^0.0.6",
+    "@struktoai/mirage-node": "^0.0.6",
+    "deepagents": "^1.13.4",
+    "dotenv": "^17.4.2",
+    "fflate": "^0.8.3",
+    "langchain": "^1.5.11",
+    "pyodide": "^314.0.7",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

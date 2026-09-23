@@ -1,0 +1,644 @@
+<title>Two Doors, One Workspace</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #f4f6f8;
+    --surface: #ffffff;
+    --ink: #182028;
+    --muted: #5a6573;
+    --line: #d5dbe2;
+    --accent: #0e6f8e;
+    --accent-soft: #dbeef4;
+    --warn: #b0461c;
+    --warn-soft: #f8e6dd;
+    --ok: #2c7a4b;
+    --ok-soft: #dff0e5;
+    --code-bg: #eef1f4;
+    --shadow: 0 1px 2px rgba(24, 32, 40, 0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1418;
+      --surface: #171d23;
+      --ink: #e4e8ec;
+      --muted: #9aa5b1;
+      --line: #2c353f;
+      --accent: #5fbbd6;
+      --accent-soft: #143440;
+      --warn: #e6865a;
+      --warn-soft: #3b2418;
+      --ok: #6fc590;
+      --ok-soft: #173525;
+      --code-bg: #10161b;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0f1418;
+    --surface: #171d23;
+    --ink: #e4e8ec;
+    --muted: #9aa5b1;
+    --line: #2c353f;
+    --accent: #5fbbd6;
+    --accent-soft: #143440;
+    --warn: #e6865a;
+    --warn-soft: #3b2418;
+    --ok: #6fc590;
+    --ok-soft: #173525;
+    --code-bg: #10161b;
+    --shadow: none;
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    padding-inline: 16px;
+    padding-block: 0 64px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1, h2, h3 { font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-weight: 600; text-wrap: balance; line-height: 1.2; }
+  h1 { font-size: 2.3rem; margin: 40px 0 8px; }
+  h2 { font-size: 1.5rem; margin: 56px 0 12px; padding-top: 16px; border-top: 1px solid var(--line); }
+  h3 { font-size: 1.15rem; margin: 28px 0 8px; }
+  p { max-width: 68ch; margin: 0 0 14px; }
+  li { max-width: 66ch; }
+  ul, ol { padding-left: 22px; margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  code, pre { font-family: "IBM Plex Mono", Consolas, "Courier New", monospace; }
+  code { font-size: 0.9em; background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0 0 18px; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .eyebrow { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin-top: 32px; }
+  .meta { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+  .meta span + span::before { content: " · "; }
+
+  nav.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.9rem; margin: 0 0 8px; }
+  nav.toc a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; }
+  nav.toc a:hover, nav.toc a:focus-visible { border-bottom-color: var(--accent); outline: none; }
+
+  .verdict { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 18px 22px; box-shadow: var(--shadow); margin: 0 0 24px; }
+  .verdict p:last-child { margin-bottom: 0; }
+  .verdict strong { color: var(--accent); }
+
+  .callout { border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; margin: 0 0 18px; background: var(--surface); }
+  .callout.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .callout.ok { border-color: var(--ok); background: var(--ok-soft); }
+  .callout p:last-child { margin-bottom: 0; }
+
+  figure { margin: 22px 0 28px; }
+  figure svg { max-width: 100%; height: auto; display: block; color: var(--ink); }
+  figcaption { font-size: 0.88rem; color: var(--muted); margin-top: 8px; max-width: 70ch; }
+  .fig-scroll { overflow-x: auto; }
+  .d-box { fill: var(--surface); stroke: currentColor; stroke-width: 1.1; }
+  .d-box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.4; }
+  .d-box-warn { fill: var(--warn-soft); stroke: var(--warn); stroke-width: 1.2; }
+  .d-proc { fill: none; stroke: currentColor; stroke-width: 1; stroke-dasharray: 5 4; opacity: 0.7; }
+  .d-line { stroke: currentColor; stroke-width: 1.3; fill: none; }
+  .d-line-accent { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+  .d-line-warn { stroke: var(--warn); stroke-width: 1.4; fill: none; stroke-dasharray: 4 3; }
+  .d-t { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 12.5px; fill: currentColor; }
+  .d-tb { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 13px; font-weight: 600; fill: currentColor; }
+  .d-ts { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; fill: var(--muted); }
+  .d-tl { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 11px; fill: var(--muted); }
+  .d-tw { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 11px; fill: var(--warn); font-weight: 500; }
+  .d-ta { fill: var(--accent); }
+  .d-arrow { fill: currentColor; }
+  .d-arrow-accent { fill: var(--accent); }
+  .d-arrow-warn { fill: var(--warn); }
+
+  .table-scroll { overflow-x: auto; margin: 0 0 20px; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; background: var(--surface); }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; }
+  td.good { color: var(--ok); }
+  td.bad { color: var(--warn); }
+  th.rec { border-top: 3px solid var(--accent); }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .pill { display: inline-block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; padding: 1px 8px; border-radius: 999px; border: 1px solid; vertical-align: middle; }
+  .pill.rec { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  .pill.no { color: var(--warn); border-color: var(--warn); background: var(--warn-soft); }
+  .pill.later { color: var(--muted); border-color: var(--line); }
+
+  dl.refs { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; font-size: 0.88rem; }
+  dl.refs dt { font-family: "IBM Plex Mono", monospace; color: var(--muted); }
+  dl.refs dd { margin: 0; }
+  @media (max-width: 560px) { dl.refs { grid-template-columns: 1fr; } dl.refs dd { margin-bottom: 8px; } }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <p class="eyebrow">Design decision · mirage × deepagents</p>
+  <h1>Two Doors, One Workspace</h1>
+  <p class="meta"><span>2026-09-17</span><span>deepagents 1.13.4</span><span>@struktoai/mirage-* 0.0.6</span><span>@modelcontextprotocol/sdk 1.30.0</span><span>repo: Documents/mirage</span></p>
+
+  <nav class="toc" aria-label="Sections">
+    <a href="#verdict">Verdict</a>
+    <a href="#backend">How deepagents uses a backend</a>
+    <a href="#mirage">What mirage already ships</a>
+    <a href="#designs">Four designs</a>
+    <a href="#compare">Comparison</a>
+    <a href="#recommend">Recommendation</a>
+    <a href="#wiring">Wiring and proof</a>
+    <a href="#risks">Risks</a>
+    <a href="#appendix">Appendix</a>
+  </nav>
+
+  <h2 id="verdict">The question and the verdict</h2>
+  <p>You are wrapping a mirage <code>Workspace</code> (RAM and disk mounts plus a Pyodide python runtime) in an MCP server. The question is whether deepagents should then reach that server through a <em>recreated workspace</em>, meaning a custom backend on the deepagents side that implements deepagents' backend protocol and forwards every call over MCP, the way LangChain's own workspace abstraction would, or whether the MCP server should be treated as something else entirely.</p>
+
+  <div class="verdict">
+    <p><strong>Do not recreate the workspace on the deepagents side.</strong> Keep the in-process backend that this repo already uses, <code>LangchainWorkspace(ws)</code>, and mount the MCP server on the <em>same</em> <code>Workspace</code> instance as a second door for external clients. The agent talks to the workspace through a typed protocol; outside tools talk to it through MCP. Nothing on the deepagents path goes over MCP.</p>
+    <p>A proxy backend over the <em>existing</em> six MCP tools would be strictly worse than what you have: that surface covers six of the eleven backend operations, returns prose meant for a model rather than data meant for a program, and carries a stale-write guard that would fire inside the agent's own backend.</p>
+    <p><strong>If the workspace must leave the agent's process, mirror the full backend contract over MCP instead.</strong> Expose one tool per backend operation with structured results, and adapt them back into a remote <em>backend</em> object on the deepagents side. A prototype of that design in this repo passes the same conformance checks as the in-process adapter. It is the right migration path, not the starting point.</p>
+  </div>
+
+  <p>Both claims were verified with tests in this repo. A six-assertion test attaches both doors to one workspace and shows files written through either side visible through the other, with both execute paths serializing on the single Pyodide queue. A seventeen-assertion test runs the remote eleven-operation backend and the in-process adapter through identical checks. Details are in the <a href="#wiring">wiring section</a>.</p>
+
+  <h2 id="backend">How deepagents uses a backend</h2>
+  <p>In deepagents 1.13.4 the backend is not just the storage behind the file tools. It is a single object that the whole middleware stack reads and writes, and every subagent shares it. Understanding who calls it is what makes a lossy proxy expensive.</p>
+
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 760 320" role="img" aria-label="Six consumers inside deepagents, the eight filesystem tools and four middlewares plus subagents, all call one backend object that implements SandboxBackendProtocolV2.">
+      <defs>
+        <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+      </defs>
+      <g>
+        <rect x="20" y="20" width="320" height="42" rx="4" class="d-box"/>
+        <text x="32" y="38" class="d-tb">8 filesystem tools</text>
+        <text x="32" y="54" class="d-ts">ls read_file write_file edit_file delete glob grep execute</text>
+        <line x1="340" y1="41" x2="438" y2="41" class="d-line" marker-end="url(#ar1)"/>
+
+        <rect x="20" y="66" width="320" height="42" rx="4" class="d-box"/>
+        <text x="32" y="84" class="d-tb">FilesystemMiddleware</text>
+        <text x="32" y="100" class="d-ts">tool results &gt; ~80 KB → /large_tool_results/&lt;id&gt;.txt</text>
+        <line x1="340" y1="87" x2="438" y2="87" class="d-line" marker-end="url(#ar1)"/>
+        <text x="356" y="82" class="d-tl">write</text>
+
+        <rect x="20" y="112" width="320" height="42" rx="4" class="d-box"/>
+        <text x="32" y="130" class="d-tb">SummarizationMiddleware</text>
+        <text x="32" y="146" class="d-ts">history → /conversation_history/ via download + upload</text>
+        <line x1="340" y1="133" x2="438" y2="133" class="d-line" marker-end="url(#ar1)"/>
+        <text x="356" y="128" class="d-tl">bytes</text>
+
+        <rect x="20" y="158" width="320" height="42" rx="4" class="d-box"/>
+        <text x="32" y="176" class="d-tb">MemoryMiddleware</text>
+        <text x="32" y="192" class="d-ts">memory files: downloadFiles, fallback read</text>
+        <line x1="340" y1="179" x2="438" y2="179" class="d-line" marker-end="url(#ar1)"/>
+        <text x="356" y="174" class="d-tl">read</text>
+
+        <rect x="20" y="204" width="320" height="42" rx="4" class="d-box"/>
+        <text x="32" y="222" class="d-tb">SkillsMiddleware</text>
+        <text x="32" y="238" class="d-ts">ls skills dir, read each SKILL.md</text>
+        <line x1="340" y1="225" x2="438" y2="225" class="d-line" marker-end="url(#ar1)"/>
+        <text x="356" y="220" class="d-tl">ls + read</text>
+
+        <rect x="20" y="250" width="320" height="42" rx="4" class="d-box"/>
+        <text x="32" y="268" class="d-tb">Subagents</text>
+        <text x="32" y="284" class="d-ts">same backend instance, closed over in src/agent.ts</text>
+        <line x1="340" y1="271" x2="438" y2="271" class="d-line" marker-end="url(#ar1)"/>
+        <text x="356" y="266" class="d-tl">shares</text>
+      </g>
+      <g>
+        <rect x="440" y="20" width="300" height="272" rx="4" class="d-box-accent"/>
+        <text x="456" y="44" class="d-tb">backend: SandboxBackendProtocolV2</text>
+        <text x="456" y="72" class="d-ts">ls · read · readRaw · write · edit</text>
+        <text x="456" y="90" class="d-ts">grep · glob · delete?</text>
+        <text x="456" y="108" class="d-ts">uploadFiles? · downloadFiles?</text>
+        <text x="456" y="126" class="d-ts">execute(command) · readonly id</text>
+        <text x="456" y="166" class="d-tl">resolved and capability-probed on</text>
+        <text x="456" y="182" class="d-tl">every model call and every tool call</text>
+        <text x="456" y="216" class="d-tw">empty id ⇒ execute tool silently removed</text>
+        <text x="456" y="250" class="d-tl">structured results: FileInfo[], bytes,</text>
+        <text x="456" y="266" class="d-tl">GrepMatch[], WriteResult, ExecuteResponse</text>
+      </g>
+    </svg>
+    </div>
+    <figcaption>Everything in deepagents that touches files goes through one backend object. Four middlewares and every subagent use it beyond the eight tools the model sees, so the backend's cost and fidelity are paid on every turn, not only when the model asks for a file.</figcaption>
+  </figure>
+
+  <p>Three facts matter for the decision.</p>
+  <ul>
+    <li><strong>The contract is typed and binary-safe.</strong> Directory listings come back as file-info records, reads can return bytes with a MIME type, and history offload uses batch upload and download of raw bytes.</li>
+    <li><strong>The backend is probed constantly.</strong> On each model call and tool call deepagents resolves the backend and checks whether it has <code>execute</code> and <code>delete</code>. A backend with an empty <code>id</code> loses its execute tool without any error.</li>
+    <li><strong>deepagents has no MCP client.</strong> The package contains no MCP code, the LangChain MCP adapter is not installed, and the only MCP package present is the server SDK that the mirage packages depend on.</li>
+  </ul>
+
+  <h2 id="mirage">What mirage already ships</h2>
+  <p>The mirage-agents package already contains both halves of the recommended design, and this repo already uses one of them.</p>
+
+  <h3>The deepagents adapter, already in use</h3>
+  <p><code>LangchainWorkspace</code> from <code>@struktoai/mirage-agents/langchain</code> implements the sandbox protocol directly against an in-process workspace. Every agent in this repo is created with it as the backend: the API test, the multi-tenant test and the chat CLI. It supplies all protocol methods except <code>delete</code>, and its sandbox id defaults to a non-empty string, so the execute tool is enabled and <code>python3</code> runs inside Pyodide.</p>
+
+  <h3>The MCP server, not yet used</h3>
+  <p><code>createMirageMcpServer(ws)</code> from <code>@struktoai/mirage-agents/mcp</code> turns any workspace into an MCP server, and <code>serveMirageMcp</code> connects it to standard input and output. It registers six tools built on the same tool-operations class that the OpenAI, Vercel, Mastra and Claude Agent SDK adapters use.</p>
+
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Backend needs (V2)</th><th>MCP door offers</th><th>Gap for a proxy backend</th></tr></thead>
+    <tbody>
+      <tr><td><code>ls</code> → FileInfo[]</td><td><code>ls</code> → raw shell listing text</td><td class="bad">re-parse text; no sizes or timestamps</td></tr>
+      <tr><td><code>read</code> → content + pagination</td><td><code>read</code> → line-numbered text</td><td class="bad">strip line numbers; lossy on lines that start with digits and tabs</td></tr>
+      <tr><td><code>readRaw</code> → bytes + MIME</td><td>none</td><td class="bad">no binary path</td></tr>
+      <tr><td><code>write</code> (overwrite)</td><td><code>write</code> refuses existing files</td><td class="bad">semantics differ from every built-in backend</td></tr>
+      <tr><td><code>edit</code></td><td><code>edit</code> with stale-write guard</td><td class="bad">guard fires inside the backend after any python or subagent write</td></tr>
+      <tr><td><code>grep(pattern, path, glob, maxCount)</code> → GrepMatch[]</td><td><code>grep(pattern, path)</code> → raw text</td><td class="bad">drop two arguments; re-parse</td></tr>
+      <tr><td><code>glob</code></td><td>none</td><td class="bad">fake with execute + find</td></tr>
+      <tr><td><code>delete</code></td><td>none</td><td class="bad">fake with execute + rm</td></tr>
+      <tr><td><code>uploadFiles</code> / <code>downloadFiles</code></td><td>none</td><td class="bad">text-only fallback corrupts binary offloads</td></tr>
+      <tr><td><code>execute</code> → output, exitCode, truncated</td><td><code>execute_command</code> → text</td><td class="bad">exit code not returned separately</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The gap is structural, not a missing feature or two. The MCP tools are a contract for a language model: short descriptions, prose results, a guard against editing what you have not read. The backend is a contract for middleware: typed records, bytes, batches and capability flags.</p>
+
+  <h2 id="designs">Four designs</h2>
+
+  <h3>A. In-process backend, MCP as a second door <span class="pill rec">recommended</span></h3>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 760 330" role="img" aria-label="One Node process holds one mirage Workspace. The deepagents agent reaches it through LangchainWorkspace with typed calls. External MCP clients reach the same Workspace through createMirageMcpServer with six text tools.">
+      <defs>
+        <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+        <marker id="arAa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow-accent"/></marker>
+      </defs>
+      <rect x="20" y="20" width="720" height="292" rx="6" class="d-proc"/>
+      <text x="34" y="40" class="d-tl">one Node process</text>
+
+      <rect x="40" y="56" width="220" height="44" rx="4" class="d-box"/>
+      <text x="52" y="75" class="d-tb">deepagents agent</text>
+      <text x="52" y="91" class="d-ts">createDeepAgent({ backend })</text>
+      <line x1="150" y1="100" x2="150" y2="118" class="d-line-accent" marker-end="url(#arAa)"/>
+
+      <rect x="40" y="120" width="220" height="44" rx="4" class="d-box-accent"/>
+      <text x="52" y="139" class="d-tb">LangchainWorkspace(ws)</text>
+      <text x="52" y="155" class="d-ts">SandboxBackendProtocolV2, id "mirage"</text>
+      <line x1="200" y1="164" x2="300" y2="206" class="d-line-accent" marker-end="url(#arAa)"/>
+      <text x="150" y="196" class="d-tl">typed calls, bytes, batches</text>
+
+      <rect x="500" y="56" width="220" height="44" rx="4" class="d-box"/>
+      <text x="512" y="75" class="d-tb">external MCP client</text>
+      <text x="512" y="91" class="d-ts">Claude Code · Desktop · other agents</text>
+      <line x1="610" y1="100" x2="610" y2="118" class="d-line" marker-end="url(#arA)"/>
+
+      <rect x="500" y="120" width="220" height="44" rx="4" class="d-box"/>
+      <text x="512" y="139" class="d-tb">createMirageMcpServer(ws)</text>
+      <text x="512" y="155" class="d-ts">6 tools · text results · stale guard</text>
+      <line x1="560" y1="164" x2="460" y2="206" class="d-line" marker-end="url(#arA)"/>
+      <text x="522" y="196" class="d-tl">ws.execute / ws.fs</text>
+
+      <rect x="250" y="208" width="260" height="88" rx="4" class="d-box"/>
+      <text x="262" y="228" class="d-tb">mirage Workspace</text>
+      <text x="262" y="246" class="d-ts">/data RAM · /out disk · MountMode.EXEC</text>
+      <text x="262" y="262" class="d-ts">Pyodide runtime · one promise queue</text>
+      <text x="262" y="278" class="d-ts">policies · snapshots · state stores</text>
+    </svg>
+    </div>
+    <figcaption>Design A. Both doors are attached to the same workspace object, so a write through either is visible through the other at once, and both execute paths enter the same Pyodide queue. This is what this repo already does, plus one extra call to create the MCP door.</figcaption>
+  </figure>
+  <p>The deepagents contract is met in full through the existing adapter. Middleware offloads, memory and skills read the VFS directly with typed results. The MCP server costs one function call, and external clients get the tool descriptions and stale-write guard that were designed for them. Isolation between tenants stays where it is today: one workspace and one Pyodide heap per tenant.</p>
+
+  <h3>B. Proxy backend over MCP, the recreated workspace <span class="pill no">not recommended</span></h3>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 760 330" role="img" aria-label="Two processes. In the agent process a recreated McpWorkspaceBackend implements the backend protocol by calling the mirage MCP server over JSON-RPC in the workspace process. Five backend methods have no tool to call, results are text that must be re-parsed, and large tool-result evictions cross the pipe.">
+      <defs>
+        <marker id="arB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+        <marker id="arBw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow-warn"/></marker>
+      </defs>
+      <rect x="20" y="20" width="340" height="292" rx="6" class="d-proc"/>
+      <text x="34" y="40" class="d-tl">agent process</text>
+      <rect x="40" y="56" width="300" height="40" rx="4" class="d-box"/>
+      <text x="52" y="81" class="d-tb">deepagents agent + middlewares</text>
+      <line x1="190" y1="96" x2="190" y2="114" class="d-line" marker-end="url(#arB)"/>
+      <rect x="40" y="116" width="300" height="56" rx="4" class="d-box-warn"/>
+      <text x="52" y="136" class="d-tb">McpWorkspaceBackend (recreated)</text>
+      <text x="52" y="152" class="d-ts">implements V2 by calling 6 tools</text>
+      <text x="52" y="166" class="d-ts">re-parses ls, read and grep text</text>
+      <text x="40" y="204" class="d-tw">no tool for: glob · readRaw · delete</text>
+      <text x="40" y="220" class="d-tw">uploadFiles · downloadFiles</text>
+      <text x="40" y="244" class="d-tw">stale guard fires inside the backend</text>
+      <text x="40" y="260" class="d-tw">after any python or subagent write</text>
+      <text x="40" y="284" class="d-tw">every ~80 KB eviction crosses the pipe</text>
+
+      <line x1="340" y1="144" x2="418" y2="144" class="d-line-warn" marker-end="url(#arBw)"/>
+      <line x1="418" y1="158" x2="342" y2="158" class="d-line-warn" marker-end="url(#arBw)"/>
+      <text x="380" y="134" class="d-tl" text-anchor="middle">JSON-RPC</text>
+      <text x="380" y="176" class="d-tl" text-anchor="middle">text back</text>
+
+      <rect x="420" y="20" width="320" height="292" rx="6" class="d-proc"/>
+      <text x="434" y="40" class="d-tl">workspace process</text>
+      <rect x="440" y="116" width="280" height="56" rx="4" class="d-box"/>
+      <text x="452" y="136" class="d-tb">mirage MCP server</text>
+      <text x="452" y="152" class="d-ts">execute_command read write edit ls grep</text>
+      <text x="452" y="166" class="d-ts">ToolResult { content: [text] }</text>
+      <line x1="580" y1="172" x2="580" y2="204" class="d-line" marker-end="url(#arB)"/>
+      <rect x="440" y="206" width="280" height="80" rx="4" class="d-box"/>
+      <text x="452" y="226" class="d-tb">mirage Workspace</text>
+      <text x="452" y="244" class="d-ts">/data RAM · /out disk</text>
+      <text x="452" y="260" class="d-ts">Pyodide runtime · one promise queue</text>
+    </svg>
+    </div>
+    <figcaption>Design B. The proxy has to invent five methods the server does not offer, turn prose back into data on every call, and it inherits a staleness guard meant for a human-facing client. Every middleware offload becomes a JSON-RPC message of the same size.</figcaption>
+  </figure>
+  <p>This is the design the question names, and it is the wrong layer. Beyond the gaps in the table above, the proxy would be re-instantiated or re-probed on every model and tool call, subagents would multiplex one pipe, and the adapter would have to track two moving contracts: deepagents' protocol, which has already gone from V1 to V2, and the mirage tool schema. It buys process separation at the price of a lossy wire, and there is a better way to get process separation.</p>
+
+  <h3>C. MCP tools as plain tools next to the default state backend <span class="pill no">not recommended</span></h3>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 760 300" role="img" aria-label="The agent keeps deepagents' default StateBackend, whose files live in LangGraph state, and also receives the mirage MCP tools as ordinary tools. Two unconnected filesystems result, and the model must guess which read tool to use.">
+      <defs>
+        <marker id="arC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+      </defs>
+      <rect x="40" y="24" width="320" height="40" rx="4" class="d-box"/>
+      <text x="52" y="49" class="d-tb">deepagents agent</text>
+      <line x1="120" y1="64" x2="120" y2="106" class="d-line" marker-end="url(#arC)"/>
+      <line x1="280" y1="64" x2="280" y2="106" class="d-line" marker-end="url(#arC)"/>
+
+      <rect x="40" y="108" width="150" height="56" rx="4" class="d-box"/>
+      <text x="52" y="128" class="d-tb">StateBackend</text>
+      <text x="52" y="144" class="d-ts">default; read_file, write_file…</text>
+      <text x="52" y="158" class="d-ts">offloads land here</text>
+      <line x1="115" y1="164" x2="115" y2="206" class="d-line" marker-end="url(#arC)"/>
+      <rect x="40" y="208" width="150" height="56" rx="4" class="d-box-warn"/>
+      <text x="52" y="228" class="d-tb">filesystem #1</text>
+      <text x="52" y="244" class="d-ts">LangGraph `files` channel</text>
+      <text x="52" y="258" class="d-ts">python never sees it</text>
+
+      <rect x="210" y="108" width="150" height="56" rx="4" class="d-box"/>
+      <text x="222" y="128" class="d-tb">tools: [read, write…]</text>
+      <text x="222" y="144" class="d-ts">needs an MCP client shim</text>
+      <text x="222" y="158" class="d-ts">(adapter not installed)</text>
+      <line x1="360" y1="136" x2="428" y2="136" class="d-line" marker-end="url(#arC)"/>
+
+      <rect x="430" y="108" width="290" height="56" rx="4" class="d-box"/>
+      <text x="442" y="128" class="d-tb">mirage MCP server</text>
+      <text x="442" y="144" class="d-ts">execute_command read write edit ls grep</text>
+      <line x1="575" y1="164" x2="575" y2="206" class="d-line" marker-end="url(#arC)"/>
+      <rect x="430" y="208" width="290" height="56" rx="4" class="d-box-warn"/>
+      <text x="442" y="228" class="d-tb">filesystem #2</text>
+      <text x="442" y="244" class="d-ts">mirage VFS + Pyodide</text>
+      <text x="442" y="258" class="d-ts">agent offloads never arrive here</text>
+
+      <text x="310" y="240" class="d-tw" text-anchor="middle">no link</text>
+      <text x="310" y="256" class="d-tw" text-anchor="middle">read_file vs read: model guesses</text>
+    </svg>
+    </div>
+    <figcaption>Design C. Two filesystems with near-identical tool names. Large tool results and memory land in LangGraph state where python cannot read them, and python output lands in the VFS where the middleware cannot find it.</figcaption>
+  </figure>
+  <p>Technically valid and strictly worse than A for more work. It is only sensible for read-only external services that are not the agent's filesystem, which is not this case.</p>
+
+  <h3>D. Process-separated over a backend-shaped RPC <span class="pill later">when the host must change</span></h3>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 760 330" role="img" aria-label="An agent host without WASM runs deepagents with a RemoteMirageBackend that speaks a structured RPC with JSON and base64 bytes to a pool of worker processes, one per tenant, each holding a Workspace with a pre-warmed Pyodide runtime, routed by workspace id.">
+      <defs>
+        <marker id="arD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+      </defs>
+      <rect x="20" y="20" width="310" height="292" rx="6" class="d-proc"/>
+      <text x="34" y="40" class="d-tl">agent host (no WASM required)</text>
+      <rect x="40" y="56" width="270" height="40" rx="4" class="d-box"/>
+      <text x="52" y="81" class="d-tb">deepagents agent + middlewares</text>
+      <line x1="175" y1="96" x2="175" y2="114" class="d-line" marker-end="url(#arD)"/>
+      <rect x="40" y="116" width="270" height="72" rx="4" class="d-box"/>
+      <text x="52" y="136" class="d-tb">RemoteMirageBackend</text>
+      <text x="52" y="152" class="d-ts">full V2 proxy, or BaseSandbox subclass:</text>
+      <text x="52" y="166" class="d-ts">only execute + uploadFiles + downloadFiles,</text>
+      <text x="52" y="180" class="d-ts">rest derived via POSIX shell over execute</text>
+      <text x="40" y="216" class="d-tl">wire: JSON results, base64 bytes,</text>
+      <text x="40" y="232" class="d-tl">glob · stat · read_raw · delete · upload/download,</text>
+      <text x="40" y="248" class="d-tl">stale guard off. Not the six LLM tools.</text>
+
+      <line x1="310" y1="152" x2="428" y2="152" class="d-line" marker-end="url(#arD)"/>
+      <text x="370" y="142" class="d-tl" text-anchor="middle">routed by workspaceId</text>
+
+      <rect x="430" y="20" width="310" height="292" rx="6" class="d-proc"/>
+      <text x="444" y="40" class="d-tl">worker pool</text>
+      <rect x="450" y="56" width="270" height="60" rx="4" class="d-box"/>
+      <text x="462" y="76" class="d-tb">worker · tenant A</text>
+      <text x="462" y="94" class="d-ts">Workspace + pre-warmed Pyodide heap</text>
+      <rect x="450" y="136" width="270" height="60" rx="4" class="d-box"/>
+      <text x="462" y="156" class="d-tb">worker · tenant B</text>
+      <text x="462" y="174" class="d-ts">Workspace + pre-warmed Pyodide heap</text>
+      <rect x="450" y="216" width="270" height="60" rx="4" class="d-box"/>
+      <text x="462" y="236" class="d-tb">worker · tenant C</text>
+      <text x="462" y="254" class="d-ts">crash of one never stalls the others</text>
+      <line x1="430" y1="152" x2="448" y2="86" class="d-line"/>
+      <line x1="430" y1="152" x2="448" y2="166" class="d-line"/>
+      <line x1="430" y1="152" x2="448" y2="246" class="d-line"/>
+    </svg>
+    </div>
+    <figcaption>Design D. The proxy exists, but it speaks a protocol shaped like the backend, so nothing is lost on the wire. Deepagents' abstract BaseSandbox makes the proxy small: implement execute, upload and download, and the rest is derived through shell commands the mirage VFS already supports.</figcaption>
+  </figure>
+  <p>This is the correct shape whenever the workspace must not run inside the agent's process. The move from A to D changes only the class behind the <code>backend</code> option; the agent, the prompts and the middleware are untouched. Design E below is D with MCP as the wire, and it is the concrete way to build it.</p>
+
+  <h3>E. The full backend contract mirrored over MCP <span class="pill later">the migration path</span></h3>
+  <p>Expose the workspace through eleven MCP tools, one per backend operation, each returning the operation's structured result verbatim with binary fields base64-encoded. On the deepagents side, adapt those eleven tools back into a backend object. This keeps everything design B loses, because the wire is shaped like the contract instead of like a chat tool.</p>
+  <figure>
+    <div class="fig-scroll">
+    <svg viewBox="0 0 760 330" role="img" aria-label="An agent host runs deepagents with a RemoteMirageBackend that maps each of the eleven backend methods to one MCP tool call carrying structured content and base64 bytes. In the workspace process an eleven-tool backend server delegates to the in-process LangchainWorkspace adapter over the Workspace. The six LLM-facing tools can remain as a separate door for humans and other agents.">
+      <defs>
+        <marker id="arE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow"/></marker>
+        <marker id="arEa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="d-arrow-accent"/></marker>
+      </defs>
+      <rect x="20" y="20" width="320" height="292" rx="6" class="d-proc"/>
+      <text x="34" y="40" class="d-tl">agent host</text>
+      <rect x="40" y="56" width="280" height="40" rx="4" class="d-box"/>
+      <text x="52" y="81" class="d-tb">deepagents agent + middlewares</text>
+      <line x1="180" y1="96" x2="180" y2="114" class="d-line-accent" marker-end="url(#arEa)"/>
+      <rect x="40" y="116" width="280" height="72" rx="4" class="d-box-accent"/>
+      <text x="52" y="136" class="d-tb">RemoteMirageBackend</text>
+      <text x="52" y="152" class="d-ts">implements SandboxBackendProtocolV2</text>
+      <text x="52" y="166" class="d-ts">11 methods → 11 tool calls, id "mirage"</text>
+      <text x="52" y="180" class="d-ts">decodes structuredContent, base64 → bytes</text>
+      <text x="40" y="216" class="d-tl">no Workspace, no mounts, no Pyodide here:</text>
+      <text x="40" y="232" class="d-tl">the proxy is a backend, not a workspace</text>
+      <text x="40" y="262" class="d-tl">capability probes stay local (duck-typed</text>
+      <text x="40" y="278" class="d-tl">on the object), so no RPC per model call</text>
+
+      <line x1="320" y1="144" x2="428" y2="144" class="d-line-accent" marker-end="url(#arEa)"/>
+      <line x1="428" y1="160" x2="322" y2="160" class="d-line-accent" marker-end="url(#arEa)"/>
+      <text x="374" y="134" class="d-tl" text-anchor="middle">JSON-RPC</text>
+      <text x="374" y="178" class="d-tl" text-anchor="middle">structured</text>
+
+      <rect x="430" y="20" width="310" height="292" rx="6" class="d-proc"/>
+      <text x="444" y="40" class="d-tl">workspace process</text>
+      <rect x="450" y="56" width="270" height="72" rx="4" class="d-box-accent"/>
+      <text x="462" y="76" class="d-tb">backend MCP server · 11 tools</text>
+      <text x="462" y="92" class="d-ts">backend_ls … backend_download_files</text>
+      <text x="462" y="106" class="d-ts">outputSchema + structuredContent</text>
+      <text x="462" y="120" class="d-ts">no stale guard · delegates to adapter</text>
+      <line x1="585" y1="128" x2="585" y2="146" class="d-line" marker-end="url(#arE)"/>
+      <rect x="450" y="148" width="270" height="40" rx="4" class="d-box"/>
+      <text x="462" y="167" class="d-tb">LangchainWorkspace(ws)</text>
+      <text x="462" y="181" class="d-ts">the same in-process adapter as design A</text>
+      <line x1="585" y1="188" x2="585" y2="206" class="d-line" marker-end="url(#arE)"/>
+      <rect x="450" y="208" width="270" height="56" rx="4" class="d-box"/>
+      <text x="462" y="228" class="d-tb">mirage Workspace</text>
+      <text x="462" y="246" class="d-ts">/data RAM · /out disk · Pyodide queue</text>
+      <text x="450" y="290" class="d-tw">never hand these 11 tools to a model;</text>
+      <text x="450" y="304" class="d-tw">keep the 6-tool server as the LLM door</text>
+    </svg>
+    </div>
+    <figcaption>Design E. The server adds only serialization on top of the in-process adapter, and the client adds only deserialization on top of the protocol. Nothing is re-parsed and nothing is missing. The six-tool server can still be attached to the same workspace as the door for humans and other agents.</figcaption>
+  </figure>
+
+  <p>Two readings of "adapt the eleven ops back into a new workspace" need separating. The one that works is the one drawn above: the adapted object is a <em>backend</em>, which is all deepagents needs. The other reading, mounting MCP-backed resources into a local mirage workspace with its own Pyodide, would make every python run re-seed every file over the wire, because Pyodide copies all mounts into its interpreter before each run. Keep the interpreter next to the files.</p>
+
+  <p>The prototype lives in <code>src/mcp-backend-server.ts</code> and <code>src/remote-backend.ts</code>, about 220 lines together, and is checked by <code>tests/mcp-remote-backend.test.ts</code>.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Check, run against both the in-process adapter and the remote backend</th><th>In-process</th><th>Remote over MCP</th></tr></thead>
+    <tbody>
+      <tr><td>Server lists exactly the eleven protocol operations</td><td>n/a</td><td class="good">pass</td></tr>
+      <tr><td>write, read with pagination fields, ls returns file infos</td><td class="good">pass</td><td class="good">pass</td></tr>
+      <tr><td>edit reports occurrences</td><td class="good">pass</td><td class="good">pass</td></tr>
+      <tr><td>grep returns structured matches</td><td class="good">pass</td><td class="good">pass</td></tr>
+      <tr><td>glob returns file infos</td><td class="good">pass</td><td class="good">pass</td></tr>
+      <tr><td>256-byte binary round trip through uploadFiles, readRaw, downloadFiles</td><td class="good">pass</td><td class="good">pass</td></tr>
+      <tr><td>execute runs python3 with numpy in the workspace's Pyodide</td><td class="good">pass</td><td class="good">pass</td></tr>
+      <tr><td>20 concurrent reads all succeed (subagents multiplex one backend)</td><td class="good">pass</td><td class="good">pass</td></tr>
+      <tr><td>delete available</td><td>absent in the stock adapter</td><td class="good">pass, via the VFS unlink</td></tr>
+      <tr><td>Cost of one read, in-memory transport, mean of 200</td><td class="num">0.03 ms</td><td class="num">0.13 ms</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>The hop overhead is about a tenth of a millisecond per operation on the in-memory transport. Over standard input and output or HTTP expect sub-millisecond to a few milliseconds plus network latency, which is small next to a model turn and next to Pyodide's per-run mount re-seed.</p>
+
+  <p>What E costs that A does not:</p>
+  <ul>
+    <li><strong>Base64 on every byte.</strong> JSON-RPC is text-framed, so binary offloads and downloads grow by a third on the wire. A private binary RPC would beat this only at large transfer volumes.</li>
+    <li><strong>Timeouts and cancellation.</strong> The MCP client times out requests after sixty seconds by default; the prototype raises it to ten minutes. The backend's execute method takes no abort signal, so a hung python run can only be bounded by command limits on the workspace side.</li>
+    <li><strong>Two tool sets in one process.</strong> The eleven backend tools must never reach a model: base64 upload, unguarded edit and raw execute are not model-safe. Serve them on a separate server or transport from the six LLM-facing tools.</li>
+    <li><strong>Workspace selection.</strong> The prototype serves one workspace per server. Multi-tenant deployment means one server per tenant on standard input and output, or one streamable HTTP server that picks the workspace from the session.</li>
+    <li><strong>Operational surface.</strong> Worker lifecycle, health and reconnects now exist. This is the price of process separation and is the same for D.</li>
+  </ul>
+
+  <h2 id="compare">Comparison</h2>
+  <div class="table-scroll">
+  <table>
+    <thead>
+      <tr><th>Criterion</th><th class="rec">A · in-process + MCP door</th><th>B · proxy over the 6 tools</th><th>C · tools + state backend</th><th>D · private RPC</th><th>E · 11 ops over MCP</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Backend contract coverage</td><td class="good">full, minus delete (degrades cleanly)</td><td class="bad">6 of 11 ops, lossy</td><td class="bad">two filesystems</td><td class="good">full</td><td class="good">full, delete included (verified)</td></tr>
+      <tr><td>Binary, upload, download</td><td class="good">native</td><td class="bad">text only, corrupts</td><td>in state only</td><td class="good">binary framing possible</td><td>base64, +33% on the wire (verified round trip)</td></tr>
+      <tr><td>Middleware offloads and memory</td><td class="good">direct into the VFS</td><td class="bad">every eviction is an RPC message</td><td class="bad">land in LangGraph state</td><td class="good">over RPC, binary-safe</td><td class="good">over MCP, binary-safe</td></tr>
+      <tr><td>Stale-write guard</td><td class="good">external door only</td><td class="bad">inside the agent's backend</td><td class="bad">inside the tool</td><td class="good">off</td><td class="good">off on the backend tools</td></tr>
+      <tr><td>Serialization per operation</td><td class="good">none</td><td class="bad">JSON-RPC + text parse</td><td>JSON-RPC</td><td>one structured hop</td><td>one structured hop, ~0.1 ms in-memory</td></tr>
+      <tr><td>Capability probes per model call</td><td class="good">local</td><td class="good">local</td><td>n/a</td><td class="good">local</td><td class="good">local, no RPC (verified by construction)</td></tr>
+      <tr><td>Pyodide re-seed per run</td><td>same</td><td>same</td><td>same</td><td>same</td><td>same</td></tr>
+      <tr><td>Crash isolation from Pyodide</td><td class="bad">none (as today)</td><td class="good">yes</td><td class="bad">none</td><td class="good">yes</td><td class="good">yes</td></tr>
+      <tr><td>Per-tenant worker, warm pool</td><td>no</td><td>awkward</td><td>no</td><td class="good">yes</td><td class="good">yes, one server per tenant or HTTP sessions</td></tr>
+      <tr><td>Transports, auth, tooling</td><td>n/a</td><td>MCP SDK</td><td>MCP SDK</td><td class="bad">build your own</td><td class="good">MCP SDK: stdio, streamable HTTP, auth</td></tr>
+      <tr><td>New dependencies</td><td class="good">none</td><td>MCP client + parsers</td><td class="bad">MCP adapter not installed</td><td>transport of choice</td><td class="good">none, SDK present</td></tr>
+      <tr><td>Code to write</td><td class="good">one call, optional CLI</td><td>adapter + parsers + version tracking</td><td>client shim</td><td>server + adapter + protocol + lifecycle</td><td>~220 lines (prototyped) + lifecycle</td></tr>
+      <tr><td>When it is right</td><td class="good">same Node process, this repo today</td><td class="bad">never as designed</td><td>read-only external services only</td><td>only if MCP's text framing is the bottleneck</td><td class="good">workspace must be a separate process</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="recommend">Recommendation</h2>
+  <p><strong>Choose A.</strong> The deepagents side keeps the object it already has. The MCP server is an additional door on the same workspace for clients that speak MCP: Claude Code, Claude Desktop, or another agent framework. The two doors are different contracts for different callers, and each already exists in the mirage-agents package.</p>
+  <p><strong>Recreating a workspace on the deepagents side is never the right move</strong> when the wire is the mirage MCP tool set as shipped. The reason is structural rather than a bug list. Deepagents' backend is a storage and execution protocol consumed by middleware: file records, bytes, batch transfers, capability probes. Mirage's six MCP tools are a model-facing protocol: prose results and a guard against editing what you have not read. Proxying the first through the second loses information on every call and forces the proxy to parse prose back into data.</p>
+  <p><strong>Mirroring the full contract over MCP, design E, is a different matter.</strong> It is the right way to do process separation when you need it, and the prototype shows it reaches parity with the in-process adapter. What it adapts back on the deepagents side is a backend object, not a workspace: no mounts and no interpreter are rebuilt next to the agent, which is exactly why it works. Choose it when one of the conditions below holds, and not before, because it adds a second process, a second tool set that must be kept away from models, and worker lifecycle you do not need while everything fits in one Node process.</p>
+
+  <h3>When E (or D) becomes the right answer</h3>
+  <ul>
+    <li>The agent host must not run WebAssembly, for example a serverless or memory-constrained host.</li>
+    <li>A pre-warmed Pyodide pool should be shared across many short-lived agent runs, which the warm-runtime benchmark in this repo shows takes the first call from about 2.5 s to about 10 ms.</li>
+    <li>One tenant's runaway python must not stall other tenants' model turns. Pyodide runs on the Node main thread that the agent also runs on, and the watchdog caps a run but does not isolate it.</li>
+    <li>Scaling routes workspaces to machines by workspace id.</li>
+  </ul>
+  <p>Cross-process sharing without any RPC is also available: a workspace backed by a shared state store, Redis or S3 keyed by workspace id, can be loaded in more than one process. That suits handoff between processes more than concurrent use, because each process runs its own Pyodide.</p>
+  <p>The migration from A to E is one line on the agent side, because the agent already talks to a backend object:</p>
+<pre><code>// today (A)
+backend: new LangchainWorkspace(ws)
+
+// later (E): the workspace lives in another process
+const client = new Client({ name: 'agent', version: '1' })
+await client.connect(new StdioClientTransport({ command: 'node', args: ['cli/mcp-backend.ts', 'workspaces/tenant.yaml'] }))
+backend: new RemoteMirageBackend(client, { id: 'mirage', timeoutMs: 600_000 })
+</code></pre>
+
+  <h2 id="wiring">Wiring in this repo, and the proof</h2>
+  <p>The test at <code>tests/mcp-door.test.ts</code> builds one workspace with the existing helper, attaches both doors, and connects an MCP client through the SDK's in-memory transport. It needs no API key and runs in about three and a half seconds.</p>
+
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Assertion</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>The MCP door lists exactly the six mirage tools</td><td class="good">pass</td></tr>
+      <tr><td>The backend has a non-empty sandbox id and an execute method</td><td class="good">pass</td></tr>
+      <tr><td>A file written through the deepagents backend is readable through MCP, line-numbered</td><td class="good">pass</td></tr>
+      <tr><td>A file written through MCP appears in the backend's read and ls</td><td class="good">pass</td></tr>
+      <tr><td>Both doors run python3 at once; the two timed intervals never overlap</td><td class="good">pass</td></tr>
+      <tr><td>An MCP edit after a backend-side change is refused as stale, then succeeds after a re-read; the backend itself has no guard</td><td class="good">pass</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>The wiring is the same three objects the test uses.</p>
+<pre><code>import { LangchainWorkspace, buildSystemPrompt } from '@struktoai/mirage-agents/langchain'
+import { createMirageMcpServer, serveMirageMcp } from '@struktoai/mirage-agents/mcp'
+import { loadWorkspace } from './src/config.js'
+
+const { ws, mountInfo } = await loadWorkspace('workspaces/default.yaml')
+
+// door 1: deepagents, exactly as cli/chat.ts does today
+const agent = createDeepAgent({
+  model,
+  systemPrompt: buildSystemPrompt({ mountInfo }),
+  backend: new LangchainWorkspace(ws),
+})
+
+// door 2: external MCP clients on the SAME ws
+const mcp = createMirageMcpServer(ws, { name: 'mirage' })
+await mcp.connect(transport)          // stdio, in-memory, or HTTP transport
+// or, for a standalone stdio server: await serveMirageMcp(ws)
+</code></pre>
+
+  <h3>Optional refinements</h3>
+  <ul>
+    <li><strong>Standalone MCP entry.</strong> A <code>cli/mcp.ts</code> that loads a workspace YAML and calls <code>serveMirageMcp</code> is the entry Claude Code or Claude Desktop would point at. Note that a server spawned by another client owns its own workspace; it shares state with an agent run only when both live in one process or through a shared state store.</li>
+    <li><strong>Persistent memory across threads.</strong> Wrap the backend in a <code>CompositeBackend</code> with a <code>StoreBackend</code> routed at <code>/memories/</code>. The composite inherits the sandbox id from its default backend, so the execute tool survives.</li>
+    <li><strong>Subclass to close the adapter's gaps.</strong> A small class extending <code>LangchainWorkspace</code> can add <code>delete</code> through the workspace's unlink, implement <code>glob</code> with directory components (the shipped one reduces patterns to a basename search), and let <code>write</code> overwrite like every built-in backend does.</li>
+  </ul>
+<pre><code>import { CompositeBackend, StoreBackend } from 'deepagents'
+
+const backend = new CompositeBackend(new LangchainWorkspace(ws), {
+  '/memories/': new StoreBackend(),   // needs a `store` passed to createDeepAgent
+})
+</code></pre>
+
+  <h2 id="risks">Risks and gotchas</h2>
+  <ul>
+    <li><strong>The sandbox id must be non-empty.</strong> Deepagents duck-types the execute capability on it. The adapter defaults to a non-empty id and a composite inherits it, but a hand-written backend that forgets it loses the execute tool without an error.</li>
+    <li><strong>Permissions and execute conflict.</strong> Passing <code>permissions</code> with a sandbox backend throws unless every permission path is covered by a composite route. Do not combine permissions with the plain adapter.</li>
+    <li><strong>Offload files land in the VFS.</strong> The filesystem middleware writes large tool results and evicted messages to <code>/large_tool_results/</code> and <code>/conversation_history/</code> at the workspace root. They become visible to python, to <code>ls /</code> and to external MCP clients, and Pyodide re-seeds them into the interpreter on every run, so the cost grows with each eviction. Give those prefixes a dedicated RAM mount, or route them through a composite to a state or store backend so they never touch the VFS.</li>
+    <li><strong>One Pyodide queue for both doors.</strong> A long python run from an external client delays the agent's next turn and vice versa. The test shows runs serialize rather than interleave. If that matters, deny python from the external door through workspace policies, or move to design D.</li>
+    <li><strong>The stale guard is one-sided.</strong> It protects external clients from editing what they have not re-read. The agent's backend has no such guard and can overwrite an external edit silently.</li>
+    <li><strong>A session is not a narrowed workspace view.</strong> In mirage 0.0.6 a session is shell state, so the MCP server factory cannot be handed a narrowed session. Narrowing the external door today means workspace policies or a second workspace over the same resources, which needs its own verification.</li>
+    <li><strong>Adapter quirks stay.</strong> Glob drops directory components, write refuses existing files so the model spends a turn switching to edit, and grep is literal with regex available through execute and <code>rg</code>.</li>
+    <li><strong>Windows disk mounts.</strong> Subdirectories of a disk mount reach Pyodide without the execute bit, so python traversal fails. Prefer RAM mounts seeded from a directory, as the repo's README already notes.</li>
+    <li><strong>Only the owner closes.</strong> Both doors hold the same workspace; the code that created it should be the only code calling <code>close()</code>.</li>
+  </ul>
+
+  <h2 id="appendix">Appendix: where each claim comes from</h2>
+  <dl class="refs">
+    <dt>deepagents protocol</dt><dd><code>node_modules/deepagents/dist/agent-CVBXKZAu.d.ts</code> lines 158–249 (V2 and sandbox V2), 388–396 (ls result), 2826–2829 (backend option), 3520 (CompositeBackend), 3974 (BaseSandbox)</dd>
+    <dt>deepagents sources</dt><dd>embedded in <code>node_modules/deepagents/dist/langsmith-BAO_h4J6.js.map</code>: <code>src/agent.ts</code> (backend shared with subagents), <code>src/middleware/fs.ts</code> (eviction paths, capability probes), <code>src/middleware/summarization.ts</code>, <code>memory.ts</code>, <code>skills.ts</code>, <code>src/backends/protocol.ts</code> (isSandboxBackend)</dd>
+    <dt>mirage adapter</dt><dd><code>node_modules/@struktoai/mirage-agents/dist/langchain/index.d.ts</code> and <code>index.js</code> line 143 (id default), 210–212 (write refuses existing), 256–260 (glob basename)</dd>
+    <dt>mirage MCP server</dt><dd><code>node_modules/@struktoai/mirage-agents/dist/mcp/index.js</code> lines 21–88 (six tools, stdio); <code>dist/chunk-GEO2G6YZ.js</code> lines 40–111 (tool operations, line-numbered read, stale tracker)</dd>
+    <dt>workspace runtime</dt><dd><code>node_modules/@struktoai/mirage-core/dist/workspace/workspace/workspace.d.ts</code>; <code>dist/runtime/python/pyodide.d.ts</code> (mount re-seed, journal); <code>pyodide.js</code> line 211 (promise queue); <code>dist/workspace/session/session.d.ts</code> line 203 (Session is shell state)</dd>
+    <dt>existing wiring</dt><dd><code>tests/deepagents-pyodide.test.ts</code> 59–69, <code>cli/chat.ts</code> 120–132, <code>tests/multi-tenant.test.ts</code> 221–233, <code>src/workspace.ts</code>, <code>src/config.ts</code></dd>
+    <dt>proof, design A</dt><dd><code>tests/mcp-door.test.ts</code>, run with <code>npx vitest run tests/mcp-door.test.ts</code> (6 checks)</dd>
+    <dt>prototype, design E</dt><dd><code>src/mcp-backend-server.ts</code> (eleven <code>backend_*</code> tools with <code>outputSchema</code>, base64 envelope for bytes), <code>src/remote-backend.ts</code> (<code>RemoteMirageBackend implements SandboxBackendProtocolV2</code>), <code>tests/mcp-remote-backend.test.ts</code> (17 checks, run with <code>npx vitest run tests/mcp-remote-backend.test.ts</code>)</dd>
+    <dt>MCP structured results</dt><dd><code>node_modules/@modelcontextprotocol/sdk/dist/esm/server/mcp.d.ts</code> lines 154, 257–270 (outputSchema, structuredContent); <code>shared/protocol.d.ts</code> line 57 (60 s default request timeout)</dd>
+    <dt>MCP availability</dt><dd>no MCP references in deepagents or langchain; <code>@langchain/mcp-adapters</code> absent; <code>@modelcontextprotocol/sdk</code> 1.30.0 present as a dependency of the mirage packages, with <code>dist/esm/inMemory.js</code> used by the test</dd>
+  </dl>
+</div>

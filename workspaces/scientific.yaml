@@ -1,0 +1,130 @@
+# The popular scientific Python stack, every package taken from the Pyodide
+# distribution this project ships (pyodide-lock.json, Python 3.14). numpy and
+# pandas are inside the npm package; everything else is fetched from the
+# Pyodide CDN the first time and then cached next to the distribution in
+# node_modules/pyodide, so later starts are offline.
+#
+# Preloading all of this costs boot time and memory: the full list below boots
+# in ~27 s and adds ~1.7 GB RSS per instance (tests/scientific.test.ts prints
+# both). Measured per group, with wheels cached:
+#
+#   numpy                                    1.1 s   130 MB
+#   numpy + pandas                           1.3 s   140 MB
+#   + scipy + matplotlib                     2.4 s   360 MB
+#   + scikit-learn + statsmodels             3.3 s   410 MB
+#   numpy + pandas + polars + pyarrow
+#     + duckdb + xarray                      6.3 s   980 MB   <- the expensive group
+#   numpy + sympy                            1.2 s   145 MB
+#   numpy + scikit-image + pillow
+#     + shapely + networkx                   3.0 s   330 MB
+#
+# Trim the list, or move rarely used packages (pyarrow, duckdb, polars first)
+# out of `packages` and rely on autoLoadFromImports to fetch them on first
+# import, paying the cost only in sessions that need them.
+#
+# Beyond the distribution, three routes bring in more (see README,
+# "Packages the distribution lacks"):
+#   1. Pure-python packages are vendored: `npm run fetch:wheels` downloads
+#      their wheels from PyPI and unpacks them into
+#      workspaces/wheels/site-packages/, the /wheels RAM mount is seeded from
+#      that directory read-only, and `sysPath` puts it on sys.path. Done for
+#      seaborn, plotly, openpyxl (+ et_xmlfile), dask (+ partd, locket),
+#      autograd, pint (+ flexcache, flexparser), tifffile, scikit-posthocs.
+#   2. Compiled packages that publish a wheel for this ABI on PyPI
+#      (cp314-cp314-pyemscripten_2026_0_wasm32) are named in `packages` by
+#      path or https URL and installed by the Pyodide loader (jiter below).
+#   3. Everything else has no WebAssembly build: numba, torch, jax, rdkit
+#      (in progress upstream), numexpr, gensim, sparse. They cannot be made
+#      to work in Pyodide today.
+name: scientific
+mode: exec
+
+mounts:
+  /data:
+    type: ram
+    description: Input files, in memory only (read/write).
+  /out:
+    type: disk
+    root: ../vfs/scientific
+    wipe: true
+    description: Output files, persisted to disk (read/write). Save plots and results here.
+  /wheels:
+    # RAM, not disk: on Windows, subdirectories of a disk mount reach Pyodide
+    # with mode 0o666 (no execute bit), so the interpreter cannot traverse
+    # them. A RAM mount seeded from the host directory has no such problem
+    # and is faster to import from.
+    type: ram
+    seedDir: ./wheels/site-packages
+    mode: read
+    description: Vendored pure-python packages (seaborn, plotly, openpyxl). Already on sys.path; nothing to do here.
+
+runtimes:
+  - type: pyodide
+    config:
+      packages:
+        # numerics and data frames
+        - numpy
+        - scipy
+        - pandas
+        - polars
+        - pyarrow
+        - xarray
+        # statistics and machine learning
+        - scikit-learn
+        - statsmodels
+        - patsy
+        # symbolic and arbitrary precision
+        - sympy
+        - mpmath
+        # plotting (Agg backend, write PNG/SVG to /out)
+        - matplotlib
+        # graphs, images, geometry
+        - networkx
+        - scikit-image
+        - pillow
+        - shapely
+        # signal processing and storage
+        - pywavelets
+        - h5py
+        - duckdb
+        # utilities
+        - pyyaml
+        - regex
+        - tqdm
+        - joblib
+        # convex optimisation: cvxpy is named cvxpy-base in the distribution;
+        # clarabel and highspy are the solvers it can use here.
+        - cvxpy-base
+        - clarabel
+        - highspy
+        # dependencies of the vendored wheels below. autoLoadFromImports only
+        # scans the code being run, not what a vendored package imports, so
+        # a vendored wheel's distribution dependencies must be preloaded.
+        - narwhals   # plotly
+        - packaging  # plotly, dask
+        - click      # dask
+        - toolz      # dask
+        - cloudpickle  # dask
+        - fsspec     # dask
+        - platformdirs  # pint
+        - typing-extensions  # pint
+        # A compiled package from PyPI built for this interpreter's ABI
+        # (cp314, pyemscripten_2026_0_wasm32, PEP 783), downloaded by
+        # fetch:wheels. Paths resolve relative to this file.
+        - ./wheels/wasm/jiter-0.17.0-cp314-cp314-pyemscripten_2026_0_wasm32.whl
+      # Fetch anything else in the distribution on first import
+      # (e.g. astropy, biopython, xgboost, lightgbm, geopandas, bokeh, altair).
+      autoLoadFromImports: true
+      # Pure-python packages vendored from PyPI, unpacked by fetch:wheels
+      # into the /wheels mount (see the header comment). A directory, not
+      # the .whl files: packages that open() data files next to their own
+      # modules (plotly) need real files, which zipimport cannot serve.
+      sysPath: ["/wheels"]
+      # Packages that reach outside the sandbox or make no sense here.
+      denyPackages: [requests, micropip]
+      bootstrapCode: |
+        import warnings
+        warnings.filterwarnings("ignore")
+        import matplotlib
+        matplotlib.use("Agg")
+  - vfs
